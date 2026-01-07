@@ -41,6 +41,7 @@ public class Exercise extends BaseEntity {
     private ExerciseDuration duration;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean completed = false;
 
     @Column(length = 50)

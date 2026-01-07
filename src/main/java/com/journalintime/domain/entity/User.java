@@ -34,9 +34,11 @@ public class User extends BaseEntity {
     private String fullName;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @Column(length = 20)
+    @Builder.Default
     private String role = "USER";
 
     @Column(columnDefinition = "TEXT")

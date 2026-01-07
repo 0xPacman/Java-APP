@@ -2,6 +2,7 @@ package com.journalintime.ui;
 
 import atlantafx.base.theme.PrimerLight;
 import com.journalintime.JournalIntimeApplication;
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
