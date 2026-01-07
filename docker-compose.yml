@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: journal-intime-db
+    environment:
+      POSTGRES_DB: journal_intime
+      POSTGRES_USER: journal_user
+      POSTGRES_PASSWORD: journal_pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - journal-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U journal_user -d journal_intime"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Journal Intime Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: journal-intime-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/journal_intime
+      SPRING_DATASOURCE_USERNAME: journal_user
+      SPRING_DATASOURCE_PASSWORD: journal_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JAVA_OPTS: "-Xmx1024m -Xms512m"
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_data:/app/data
+    networks:
+      - journal-network
+    restart: unless-stopped
+
+  # pgAdmin (optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: journal-intime-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@journalintime.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - journal-network
+    depends_on:
+      - postgres
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+    driver: local
+  app_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  journal-network:
+    driver: bridge
